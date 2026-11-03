@@ -57,6 +57,15 @@ export function validateDomainState(value: unknown): value is DomainState {
     isRecord(business.barber) && string(business.barber.id) && string(business.barber.name),
     "Barbero no definido",
   );
+  if (business.barbers !== undefined) {
+    invariant(Array.isArray(business.barbers) && business.barbers.length > 0, "Equipo inválido");
+    const barberIds = new Set<string>();
+    for (const barber of business.barbers) {
+      invariant(isRecord(barber) && string(barber.id) && string(barber.name), "Barbero inválido");
+      invariant(!barberIds.has(barber.id), "Identificador de barbero duplicado");
+      barberIds.add(barber.id);
+    }
+  }
   invariant(
     typeof business.timeZone === "string" && !!business.timeZone,
     "Zona horaria no definida",
@@ -220,7 +229,7 @@ function validateBooking(value: unknown): asserts value is Booking {
     isRecord(value) &&
       string(value.id) &&
       string(value.code) &&
-      isCustomer(value.customer) &&
+      isCustomer(value.customer, true) &&
       string(value.barberId) &&
       includes(["WEB", "PHONE", "WALK_IN"] as const, value.source) &&
       includes(BOOKING_STATUSES, value.status) &&
@@ -257,8 +266,14 @@ function validateBooking(value: unknown): asserts value is Booking {
   );
 }
 
-function isCustomer(value: unknown): boolean {
-  if (!isRecord(value) || !string(value.id) || !string(value.name) || !string(value.phone))
+function isCustomer(value: unknown, requirePhone = false): boolean {
+  if (
+    !isRecord(value) ||
+    !string(value.id) ||
+    !string(value.name) ||
+    typeof value.phone !== "string" ||
+    (requirePhone && !value.phone.trim())
+  )
     return false;
   if (value.email !== undefined && typeof value.email !== "string") return false;
   if (value.preferences === undefined) return true;
@@ -298,6 +313,7 @@ function validateVisit(value: unknown): asserts value is ServiceVisit {
   invariant(
     isRecord(value) &&
       string(value.id) &&
+      (value.barberId === undefined || string(value.barberId)) &&
       (value.bookingId === undefined || string(value.bookingId)) &&
       (value.customerId === undefined || string(value.customerId)) &&
       Array.isArray(value.items) &&

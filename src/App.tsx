@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import AdminContainer from "./AdminContainer";
 import PublicApp, {
+  ANY_AVAILABLE_BARBER,
   type PublicBooking,
+  type PublicBarber,
   type PublicCustomer,
   type PublicSlot,
 } from "./public-ui/PublicApp";
@@ -13,6 +15,8 @@ import {
   createDemoSeed,
   declarePayment,
   getAvailableSlots,
+  isBlockingBooking,
+  localDateTime,
   reevaluateBookingExpirations,
   upsertCustomer,
   type DomainState,
@@ -103,7 +107,7 @@ export default function App() {
   }, []);
 
   const getSlots = useCallback(
-    async (date: string, serviceIds: string[]): Promise<PublicSlot[]> => {
+    async (date: string, serviceIds: string[], selectedBarberId: string): Promise<PublicSlot[]> => {
       const current = currentState();
       const selected = serviceIds.map((id) =>
         current.services.find((service) => service.id === id && service.active),
@@ -113,21 +117,53 @@ export default function App() {
         (sum, service) => sum + (service?.durationMinutes ?? 0),
         0,
       );
-      return getAvailableSlots({
-        config: current.business,
-        bookings: current.bookings,
-        visits: current.visits,
-        date,
-        durationMinutes,
-        now: new Date().toISOString(),
-      }).map((startsAt) => ({
-        startsAt,
-        label: new Intl.DateTimeFormat("es-BO", {
-          hour: "2-digit",
-          minute: "2-digit",
-          timeZone: current.business.timeZone,
-        }).format(new Date(startsAt)),
-      }));
+      const barbers = current.business.barbers ?? [current.business.barber];
+      const selectedBarbers =
+        selectedBarberId === ANY_AVAILABLE_BARBER
+          ? barbers
+          : barbers.filter((barber) => barber.id === selectedBarberId);
+      const now = new Date().toISOString();
+      const choicesByStart = new Map<string, PublicSlot[]>();
+
+      for (const barber of selectedBarbers) {
+        const available = getAvailableSlots({
+          config: current.business,
+          bookings: current.bookings,
+          visits: current.visits,
+          barberId: barber.id,
+          date,
+          durationMinutes,
+          now,
+        });
+        for (const startsAt of available) {
+          const choices = choicesByStart.get(startsAt) ?? [];
+          choices.push({
+            startsAt,
+            barberId: barber.id,
+            barberName: barber.name,
+            label: new Intl.DateTimeFormat("es-BO", {
+              hour: "2-digit",
+              minute: "2-digit",
+              timeZone: current.business.timeZone,
+            }).format(new Date(startsAt)),
+          });
+          choicesByStart.set(startsAt, choices);
+        }
+      }
+
+      const bookingsFor = (barberId: string) =>
+        current.bookings.filter(
+          (booking) =>
+            booking.barberId === barberId &&
+            isBlockingBooking(booking.status) &&
+            localDateTime(Date.parse(booking.startsAt), current.business.timeZone).date === date,
+        ).length;
+      return [...choicesByStart.entries()]
+        .map(([, choices]) => {
+          choices.sort((left, right) => bookingsFor(left.barberId) - bookingsFor(right.barberId));
+          return choices[0]!;
+        })
+        .sort((left, right) => left.startsAt.localeCompare(right.startsAt));
     },
     [currentState],
   );
@@ -152,7 +188,7 @@ export default function App() {
           email: input.customer.email?.trim() || undefined,
           preferences: input.customer.preferences,
         },
-        barberId: current.business.barber.id,
+        barberId: input.slot.barberId,
         source: "WEB",
         startsAt: input.slot.startsAt,
         serviceIds: input.serviceIds,
@@ -182,7 +218,7 @@ export default function App() {
         code: created.code,
         expiresAt: created.expiresAt!,
         startsAt: created.startsAt,
-        startLabel: label,
+        startLabel: `${label} · ${input.slot.barberName}`,
         amount: created.totalPrice,
         items: created.items.map((item) => ({
           id: item.serviceId,
@@ -294,6 +330,9 @@ export default function App() {
               duration: service.durationMinutes,
               requiresConsultation: service.requiresConsultation,
             }))}
+          barbers={(state.business.barbers ?? [state.business.barber]).map(
+            (barber): PublicBarber => ({ id: barber.id, name: barber.name }),
+          )}
           getSlots={getSlots}
           reserve={reserve}
           declarePayment={handleDeclare}

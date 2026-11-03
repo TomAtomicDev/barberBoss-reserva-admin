@@ -19,7 +19,7 @@ describe("updateServiceCatalog", () => {
 
     expect(next).not.toBe(state);
     expect(next.services).not.toBe(state.services);
-    expect(state.services).toHaveLength(3);
+    expect(state.services).toHaveLength(7);
     expect(next.services.at(-1)).toEqual({
       id: "new-color",
       name: "Color personalizado",
@@ -69,9 +69,9 @@ describe("updateServiceCatalog", () => {
     expect(next.bookings).toBe(withBooking.bookings);
     expect(next.bookings[0]?.items[0]).toEqual({
       serviceId: "demo-cut",
-      name: "Corte clásico",
-      price: 40,
-      durationMinutes: 45,
+      name: "Corte de pelo simple",
+      price: 35,
+      durationMinutes: 30,
     });
     expect(validateDomainState(next)).toBe(true);
   });
@@ -82,7 +82,7 @@ describe("updateServiceCatalog", () => {
       updateServiceCatalog(
         state,
         {
-          name: "Corte clásico",
+          name: "Corte de pelo simple",
           priceCents: 4_000,
           durationMinutes: 30,
           active: true,
@@ -92,7 +92,7 @@ describe("updateServiceCatalog", () => {
         () => "new",
       );
 
-    expect(() => create({ name: " corte CLÁSICO " })).toThrow(/Ya existe/);
+    expect(() => create({ name: " corte DE PELO SIMPLE " })).toThrow(/Ya existe/);
     expect(() => create({ priceCents: -1 })).toThrow(/precio/i);
     expect(() => create({ priceCents: 1.5 })).toThrow(/precio/i);
     expect(() => create({ priceCents: 0 })).toThrow(/precio mayor que cero/i);

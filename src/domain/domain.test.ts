@@ -30,6 +30,10 @@ const state = (): DomainState => ({
   business: {
     name: "Boss Barber Shop by RF",
     barber: { id: "roly", name: "Roly" },
+    barbers: [
+      { id: "roly", name: "Roly F" },
+      { id: "jhon", name: "Jhon R" },
+    ],
     timeZone: "America/La_Paz",
     schedule: [
       { weekday: 2, start: "09:00", end: "17:00", breaks: [{ start: "12:00", end: "13:00" }] },
@@ -49,6 +53,73 @@ describe("domain scheduling and booking rules", () => {
     });
     expect(slots[0]).toBe("2026-11-03T13:00:00.000Z");
     expect(slots.some((slot) => slot === "2026-11-03T16:00:00.000Z")).toBe(false);
+  });
+
+  it("checks bookings and visits against the selected barber only", () => {
+    const model = state();
+    const rolyBooking = createBooking(model, {
+      id: "roly-booking",
+      code: "R1",
+      customer: { id: "c1", name: "Demo 1", phone: "000" },
+      barberId: "roly",
+      source: "WEB",
+      startsAt: "2026-11-03T13:00:00.000Z",
+      serviceIds: ["cut"],
+      now: "2026-11-03T12:00:00.000Z",
+    });
+    const occupied = { ...model, bookings: [rolyBooking] };
+    const commonQuery = {
+      config: model.business,
+      bookings: occupied.bookings,
+      date: "2026-11-03",
+      durationMinutes: 60,
+      now: "2026-11-03T12:00:00.000Z",
+    };
+    expect(getAvailableSlots({ ...commonQuery, barberId: "roly" })).not.toContain(
+      rolyBooking.startsAt,
+    );
+    expect(getAvailableSlots({ ...commonQuery, barberId: "jhon" })).toContain(rolyBooking.startsAt);
+    expect(() =>
+      createBooking(occupied, {
+        id: "same-barber-booking",
+        code: "R2",
+        customer: { id: "c2", name: "Demo 2", phone: "001" },
+        barberId: "roly",
+        source: "WEB",
+        startsAt: rolyBooking.startsAt,
+        serviceIds: ["cut"],
+        now: "2026-11-03T12:00:00.000Z",
+      }),
+    ).toThrow(/no está disponible/);
+    expect(
+      createBooking(occupied, {
+        id: "other-barber-booking",
+        code: "J1",
+        customer: { id: "c3", name: "Demo 3", phone: "002" },
+        barberId: "jhon",
+        source: "WEB",
+        startsAt: rolyBooking.startsAt,
+        serviceIds: ["cut"],
+        now: "2026-11-03T12:00:00.000Z",
+      }).barberId,
+    ).toBe("jhon");
+
+    const visitBlock = {
+      id: "roly-visit",
+      barberId: "roly",
+      startsAt: "2026-11-03T15:00:00.000Z",
+      endsAt: "2026-11-03T16:00:00.000Z",
+      blocksAvailability: true,
+      completedAt: "2026-11-03T16:00:00.000Z",
+      items: [{ name: "Atención", price: 40, durationMinutes: 60 }],
+      totalPrice: 40,
+    };
+    expect(
+      getAvailableSlots({ ...commonQuery, bookings: [], visits: [visitBlock], barberId: "jhon" }),
+    ).toContain(visitBlock.startsAt);
+    expect(
+      getAvailableSlots({ ...commonQuery, bookings: [], visits: [visitBlock], barberId: "roly" }),
+    ).not.toContain(visitBlock.startsAt);
   });
 
   it("snapshots service price and duration and expires after 15 minutes", () => {

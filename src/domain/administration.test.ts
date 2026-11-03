@@ -136,7 +136,32 @@ describe("administrative domain operations", () => {
     expect(seed.visits).toHaveLength(1);
     expect(seed.movements).toHaveLength(3);
     expect(seed.business.name).toBe("Boss Barber Shop by RF");
-    expect(seed.business.barber.name).toBe("Roly");
+    expect(seed.business.barber.name).toBe("Roly F");
+    expect(seed.business.barbers?.map((barber) => barber.name)).toEqual(["Roly F", "Jhon R"]);
+    expect(seed.services.map((service) => service.name)).toEqual([
+      "Corte de pelo simple",
+      "Corte de pelo con Diseño",
+      "Afeitado de barba con vaporización",
+      "Tinte y coloración",
+      "Rizado Base",
+      "Perfilado de cejas",
+      "Lavado y tratamiento anti-caspa",
+    ]);
+    expect(
+      seed.services.map(({ price, durationMinutes, requiresConsultation }) => [
+        price,
+        durationMinutes,
+        requiresConsultation,
+      ]),
+    ).toEqual([
+      [35, 30, false],
+      [40, 45, false],
+      [25, 30, false],
+      [0, 0, true],
+      [0, 0, true],
+      [5, 5, false],
+      [10, 10, false],
+    ]);
   });
 
   it("rejects accepted monetary values with more than two decimals", () => {

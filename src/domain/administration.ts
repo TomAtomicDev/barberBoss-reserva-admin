@@ -161,6 +161,7 @@ export function rescheduleBooking(
       config: state.business,
       bookings: state.bookings.filter((item) => item.id !== bookingId),
       visits: state.visits,
+      barberId: booking.barberId,
       date,
       durationMinutes: duration,
       now,
@@ -216,7 +217,7 @@ export function upsertCustomer(state: DomainState, customer: Customer): DomainSt
 function isCustomerInputValid(customer: Customer): boolean {
   if (typeof customer.id !== "string" || !customer.id.trim()) return false;
   if (typeof customer.name !== "string" || !customer.name.trim()) return false;
-  if (typeof customer.phone !== "string" || !customer.phone.trim()) return false;
+  if (typeof customer.phone !== "string") return false;
   if (customer.email !== undefined && typeof customer.email !== "string") return false;
   const notes = customer.preferences?.notes;
   if (notes !== undefined && (typeof notes !== "string" || notes.length > 300)) return false;

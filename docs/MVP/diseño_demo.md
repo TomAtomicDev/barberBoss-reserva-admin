@@ -98,7 +98,7 @@ Payment / ProductSale ── MoneyMovement, según el cobro o devolución regist
 
 - Una reserva contiene varios servicios; un servicio puede aparecer en muchas reservas. `BookingItem` conserva la fotografía de precio y duración para no alterar el historial al editar el catálogo.
 - Una reserva puede tener varios pagos, por ejemplo anticipo y cargo adicional. `Booking.status` y `Payment.status` son independientes.
-- El demo usa un único barbero y propietario. No es necesario implementar selección de barbero ni gestión de capacidades por barbero.
+- El demo presenta dos barberos ficticios, Roly F y Jhon R, que comparten el horario semanal del negocio. La disponibilidad se calcula por barbero según sus reservas y atenciones locales; «Cualquiera que esté disponible» combina las opciones y asigna la solicitud a uno de ellos. No se administran horarios individuales.
 - Una atención representa lo realmente realizado, no necesariamente lo reservado. Un walk-in puede existir sin reserva previa.
 - Registrar un anticipo verificado produce un único movimiento de entrada; completar la atención no vuelve a contarlo. Una devolución es una salida independiente. Las cifras son demostrativas y no se reconcilian con el banco.
 
@@ -159,20 +159,21 @@ El administrador puede simular pago en el local y decisiones excepcionales; las 
 
 ## 9. Fuera de alcance
 
-Backend, base de datos compartida, Supabase, Worker de API, sincronización entre dispositivos, autenticación y autorización reales, reservas efectivas, bloqueo concurrente real, horarios garantizados, verificación bancaria, cobro o reembolso automáticos, subida de comprobantes, notificaciones automáticas, modo offline, inventario y multi-barbero. Tampoco se implementa protección de datos de producción ni recuperación de datos de clientes.
+Backend, base de datos compartida, Supabase, Worker de API, sincronización entre dispositivos, autenticación y autorización reales, reservas efectivas, bloqueo concurrente real, horarios garantizados, verificación bancaria, cobro o reembolso automáticos, subida de comprobantes, notificaciones automáticas, modo offline, inventario, configuración de equipo y agendas individuales por barbero. La selección entre los dos barberos ficticios precargados solo funciona en el almacenamiento local de este navegador. Tampoco se implementa protección de datos de producción ni recuperación de datos de clientes.
 
 ## 10. Criterios de aceptación
 
 1. El sitio publicado en GitHub Pages carga correctamente sus rutas y recursos, incluido el QR una vez proporcionado, también al recargar una ruta interna.
 2. Un visitante puede completar el flujo simulado y entiende que no está reservando en un servidor. El precio y la duración corresponden a los servicios seleccionados.
-3. El QR es el archivo real proporcionado y la interfaz advierte antes del pago que la transferencia es real, pero la reserva no está confirmada ni compartida.
-4. «Ya pagué» solo declara el pago localmente y abre u ofrece abrir WhatsApp con el mensaje prellenado; no afirma que el mensaje se haya enviado ni que el pago haya sido verificado.
-5. En el mismo navegador, el dashboard muestra la solicitud y permite simular aprobación, rechazo y liberación. En otro navegador o dispositivo no aparece automáticamente.
-6. El vencimiento local se recalcula tras recargar y libera el intervalo simulado; se informa que no existe garantía de disponibilidad entre usuarios.
-7. Se pueden demostrar reserva telefónica, walk-in, atención con adicional, venta y devolución; el resumen no duplica el anticipo al completar una atención.
-8. Los cambios persisten al recargar en el mismo navegador y la restauración confirmada devuelve los datos iniciales. Se informa si falla el almacenamiento.
-9. El login se identifica como simulado; no contiene credenciales reales ni se presenta como mecanismo de seguridad.
-10. La página explica que el acceso y los enlaces externos requieren conexión, sin prometer uso offline ni sincronización.
+3. La agenda pública permite elegir Roly F, Jhon R o «Cualquiera que esté disponible»; los horarios de cada uno respetan sus ocupaciones locales.
+4. El QR es el archivo real proporcionado y la interfaz advierte antes del pago que la transferencia es real, pero la reserva no está confirmada ni compartida.
+5. «Ya pagué» solo declara el pago localmente y abre u ofrece abrir WhatsApp con el mensaje prellenado; no afirma que el mensaje se haya enviado ni que el pago haya sido verificado.
+6. En el mismo navegador, el dashboard muestra la solicitud y permite simular aprobación, rechazo y liberación. En otro navegador o dispositivo no aparece automáticamente.
+7. El vencimiento local se recalcula tras recargar y libera el intervalo simulado; se informa que no existe garantía de disponibilidad entre usuarios.
+8. Se pueden demostrar reserva telefónica, walk-in, atención con adicional, venta y devolución; el resumen no duplica el anticipo al completar una atención.
+9. Los cambios persisten al recargar en el mismo navegador y la restauración confirmada devuelve los datos iniciales. Se informa si falla el almacenamiento.
+10. El login se identifica como simulado; no contiene credenciales reales ni se presenta como mecanismo de seguridad.
+11. La página explica que el acceso y los enlaces externos requieren conexión, sin prometer uso offline ni sincronización.
 
 ## 11. Pendientes para preparar la demo
 

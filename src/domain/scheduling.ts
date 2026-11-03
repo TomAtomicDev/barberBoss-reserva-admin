@@ -29,6 +29,8 @@ export function getAvailableSlots(input: {
   config: BusinessConfig;
   bookings: Booking[];
   visits?: readonly ServiceVisit[];
+  /** When supplied, availability is checked only for this barber. */
+  barberId?: string;
   date: string;
   durationMinutes: number;
   now: string;
@@ -52,13 +54,20 @@ export function getAvailableSlots(input: {
     (item) => [minutes(item.start), minutes(item.end)] as const,
   );
   const effectiveBookings = expireProvisionalBookings(input.bookings, input.now).filter(
-    (booking) => !NON_BLOCKING.has(booking.status),
+    (booking) =>
+      !NON_BLOCKING.has(booking.status) && (!input.barberId || booking.barberId === input.barberId),
   );
   const occupied = effectiveBookings.map(
     (booking) => [validInstant(booking.startsAt), validInstant(booking.endsAt)] as const,
   );
   const occupiedByVisits = (input.visits ?? [])
-    .filter((visit) => visit.blocksAvailability !== false && visit.startsAt && visit.endsAt)
+    .filter(
+      (visit) =>
+        visit.blocksAvailability !== false &&
+        visit.startsAt &&
+        visit.endsAt &&
+        (!input.barberId || !visit.barberId || visit.barberId === input.barberId),
+    )
     .map((visit) => {
       const startsAt = validInstant(visit.startsAt!);
       const endsAt = validInstant(visit.endsAt!);

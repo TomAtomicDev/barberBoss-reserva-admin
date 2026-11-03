@@ -39,6 +39,7 @@ export function createBooking(state: DomainState, input: CreateBookingInput): Bo
       config: state.business,
       bookings: currentBookings,
       visits: state.visits,
+      barberId: input.barberId,
       date: localDateTime(starts, state.business.timeZone).date,
       durationMinutes,
       now: input.now,

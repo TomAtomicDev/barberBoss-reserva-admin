@@ -802,11 +802,14 @@ export default function AdminApp(props: AdminAppProps) {
                   <div>
                     <strong>{service.name}</strong>
                     <small>
-                      {service.durationMinutes} min{" "}
-                      {service.requiresConsultation ? "· Requiere consulta" : ""}
+                      {service.requiresConsultation
+                        ? "Requiere consulta previa"
+                        : `Hasta ${service.durationMinutes} min`}
                     </small>
                   </div>
-                  <strong>{money(service.priceCents)}</strong>
+                  <strong>
+                    {service.requiresConsultation ? "Consultar" : money(service.priceCents)}
+                  </strong>
                   <span className={`admin-status ${service.active ? "is-confirmed" : ""}`}>
                     {service.active ? "Activo" : "Inactivo"}
                   </span>
@@ -1049,7 +1052,7 @@ export default function AdminApp(props: AdminAppProps) {
                   subtitle="Se guardará una ficha ficticia del cliente y la atención sin cita."
                 />
                 <TextField label="Nombre ficticio" name="name" required />
-                <TextField label="Teléfono ficticio" name="phone" required />
+                <TextField label="Celular (opcional)" name="phone" />
                 <ServiceOptions services={props.data.services} />
                 <TextField label="Nota para el cliente (opcional)" name="note" />
                 <div className="admin-field-grid">
@@ -1628,6 +1631,20 @@ function BookingDetail({
           {dateTimeLabel(booking.startsAt, timeZone)} · {booking.customerPhone}
         </p>
         <span className="admin-status is-confirmed">{statusLabels[booking.status]}</span>
+        {(booking.note || booking.musicLink) && (
+          <section className="admin-detail-preferences" aria-label="Instrucciones y preferencias">
+            <h3>Instrucciones y preferencias</h3>
+            {booking.note && <p>{booking.note}</p>}
+            {booking.musicLink && (
+              <p>
+                Playlist de música:{" "}
+                <a href={booking.musicLink} target="_blank" rel="noopener noreferrer">
+                  Abrir playlist en una pestaña nueva
+                </a>
+              </p>
+            )}
+          </section>
+        )}
         <h3>{booking.isVisit ? "Servicios realizados" : "Servicios reservados"}</h3>
         {booking.items.map((item, index) => (
           <div className="admin-detail-item" key={`${item.name}-${index}`}>
@@ -1811,8 +1828,9 @@ function ServiceOptions({ services }: { services: AdminAppProps["data"]["service
             <span>
               {service.name}
               <small>
-                {service.durationMinutes} min · {money(service.priceCents)}
-                {service.requiresConsultation ? " · Consulta" : ""}
+                {service.requiresConsultation
+                  ? "Requiere consulta previa; acordar precio y duración"
+                  : `Hasta ${service.durationMinutes} min · ${money(service.priceCents)}`}
               </small>
             </span>
           </label>

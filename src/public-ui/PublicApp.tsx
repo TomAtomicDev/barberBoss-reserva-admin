@@ -9,10 +9,19 @@ export type PublicService = {
   requiresConsultation: boolean;
 };
 
+export type PublicBarber = {
+  id: string;
+  name: string;
+};
+
+export const ANY_AVAILABLE_BARBER = "any";
+
 /** `date` is a business-calendar date (YYYY-MM-DD); `startsAt` is an absolute ISO instant. */
 export type PublicSlot = {
   startsAt: string;
   label: string;
+  barberId: string;
+  barberName: string;
 };
 
 export type PublicBookingItem = {
@@ -47,8 +56,13 @@ export type DeclarePaymentResult = { success: true } | { success: false; message
 
 export type PublicAppProps = {
   services: PublicService[];
-  /** Returns slots for a business-calendar date and the selected direct-booking services. */
-  getSlots: (date: string, serviceIds: string[]) => PublicSlot[] | Promise<PublicSlot[]>;
+  barbers: PublicBarber[];
+  /** Returns slots for a date, selected direct-booking services, and barber selection. */
+  getSlots: (
+    date: string,
+    serviceIds: string[],
+    barberId: string,
+  ) => PublicSlot[] | Promise<PublicSlot[]>;
   reserve: (input: {
     serviceIds: string[];
     date: string;
@@ -81,6 +95,20 @@ function businessDateLabel(date: string) {
   }).format(parsed);
 }
 
+function todayInTimeZone(timeZone: string) {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })
+      .formatToParts(new Date())
+      .map((part) => [part.type, part.value]),
+  );
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
 function googleCalendarUrl(booking: PublicBooking, businessName: string) {
   const start = new Date(booking.startsAt);
   const end = new Date(
@@ -106,6 +134,7 @@ function whatsappUrl(number: string, message: string) {
 
 export default function PublicApp({
   services,
+  barbers,
   getSlots,
   reserve,
   declarePayment,
@@ -116,7 +145,8 @@ export default function PublicApp({
   paymentInstructions,
 }: PublicAppProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(() => todayInTimeZone(timeZone));
+  const [selectedBarberId, setSelectedBarberId] = useState(ANY_AVAILABLE_BARBER);
   const [slots, setSlots] = useState<PublicSlot[]>([]);
   const [slotsRefresh, setSlotsRefresh] = useState(0);
   const [slotsLoading, setSlotsLoading] = useState(false);
@@ -156,7 +186,7 @@ export default function PublicApp({
     setSlotsLoading(true);
     setSlotsError("");
     setSelectedSlot(null);
-    Promise.resolve(getSlots(date, selectedIds))
+    Promise.resolve(getSlots(date, selectedIds, selectedBarberId))
       .then((nextSlots) => {
         if (active) setSlots(nextSlots);
       })
@@ -169,7 +199,7 @@ export default function PublicApp({
     return () => {
       active = false;
     };
-  }, [date, selectedIds, getSlots, slotsRefresh]);
+  }, [date, selectedIds, selectedBarberId, getSlots, slotsRefresh]);
 
   useEffect(() => {
     if (!booking || screen !== "payment") return;
@@ -263,17 +293,14 @@ export default function PublicApp({
           <h1>
             Reserva tu
             <br />
-            <em>momento.</em>
+            <em>cita.</em>
           </h1>
-          <p>
-            Con Roly, tu barbero. Elige tus servicios y un horario para crear una solicitud de
-            prueba.
-          </p>
+          <p>Elige tus servicios y un horario para crear una solicitud de reserva.</p>
         </div>
         <div className="pb-intro-art" aria-hidden="true">
           <span>✦</span>
           <b>RF</b>
-          <i>ROLY · BARBERO</i>
+          <i>ROLY F · JHON R</i>
         </div>
       </section>
 
@@ -313,7 +340,7 @@ export default function PublicApp({
                         <small>
                           {service.requiresConsultation
                             ? "Requiere consulta previa"
-                            : `${service.duration} min`}
+                            : `Hasta ${service.duration} min`}
                         </small>
                       </span>
                       <span className="pb-service-price">
@@ -367,16 +394,33 @@ export default function PublicApp({
                   <p>Horarios de demostración, sujetos a cambios.</p>
                 </div>
               </div>
-              <label className="pb-field pb-date-field">
-                <span>Fecha</span>
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(event) => setDate(event.target.value)}
-                  disabled={selectedServices.length === 0}
-                  aria-describedby="pb-date-hint"
-                />
-              </label>
+              <div className="pb-schedule-fields">
+                <label className="pb-field pb-date-field">
+                  <span>Fecha</span>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(event) => setDate(event.target.value)}
+                    disabled={selectedServices.length === 0}
+                    aria-describedby="pb-date-hint"
+                  />
+                </label>
+                <label className="pb-field pb-barber-field">
+                  <span>Barbero</span>
+                  <select
+                    value={selectedBarberId}
+                    onChange={(event) => setSelectedBarberId(event.target.value)}
+                    disabled={selectedServices.length === 0}
+                  >
+                    <option value={ANY_AVAILABLE_BARBER}>Cualquiera que esté disponible</option>
+                    {barbers.map((barber) => (
+                      <option key={barber.id} value={barber.id}>
+                        {barber.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
               <p className="pb-field-hint" id="pb-date-hint">
                 Selecciona servicios para consultar los horarios disponibles. Zona horaria del
                 negocio: {timeZone}.
@@ -391,17 +435,21 @@ export default function PublicApp({
                   {slotsError} Cambia la fecha para volver a consultar.
                 </p>
               )}
-              {!slotsLoading && date && !slotsError && (
+              {!slotsLoading && date && !slotsError && selectedServices.length > 0 && (
                 <div className="pb-slots" role="group" aria-label="Horarios disponibles">
                   {slots.map((slot) => (
                     <button
-                      key={slot.startsAt}
+                      key={`${slot.startsAt}-${slot.barberId}`}
                       type="button"
-                      className={`pb-slot${selectedSlot?.startsAt === slot.startsAt ? " is-selected" : ""}`}
-                      aria-pressed={selectedSlot?.startsAt === slot.startsAt}
+                      className={`pb-slot${selectedSlot?.startsAt === slot.startsAt && selectedSlot.barberId === slot.barberId ? " is-selected" : ""}`}
+                      aria-pressed={
+                        selectedSlot?.startsAt === slot.startsAt &&
+                        selectedSlot.barberId === slot.barberId
+                      }
                       onClick={() => setSelectedSlot(slot)}
                     >
-                      {slot.label}
+                      <span>{slot.label}</span>
+                      <small>{slot.barberName}</small>
                     </button>
                   ))}
                   {slots.length === 0 && (
@@ -477,7 +525,7 @@ export default function PublicApp({
                 </label>
                 <label className="pb-field pb-wide">
                   <span>
-                    Enlace musical <small>Opcional</small>
+                    Playlist de música que te gustaría escuchar <small>Opcional</small>
                   </span>
                   <input
                     type="url"
@@ -509,7 +557,7 @@ export default function PublicApp({
                   <li key={service.id}>
                     <span>
                       {service.name}
-                      <small>{service.duration} min</small>
+                      <small>Hasta {service.duration} min</small>
                     </span>
                     <strong>{formatMoney(service.price)}</strong>
                   </li>
@@ -524,7 +572,7 @@ export default function PublicApp({
             </div>
             <p className="pb-summary-slot">
               {selectedSlot
-                ? `${businessDateLabel(date)} · ${selectedSlot.label}`
+                ? `${businessDateLabel(date)} · ${selectedSlot.label} · ${selectedSlot.barberName}`
                 : "El horario aparecerá aquí"}
             </p>
             {error && (
@@ -684,20 +732,16 @@ export default function PublicApp({
           <div className="pb-result-emblem" aria-hidden="true">
             ✓
           </div>
-          <p className="pb-kicker">Declaración guardada en la demostración</p>
+          <p className="pb-kicker">Reserva guardada (demo)</p>
           <h2 id="pb-result-title">
-            Tu solicitud
+            Envía tu comprobante
             <br />
-            <em>no está confirmada.</em>
+            <em>para confirmar tu reserva</em>
           </h2>
-          <p className="pb-result-lead">
-            El botón registró una declaración local. No se verificó el pago ni se envió información
-            al propietario.
-          </p>
           <div className="pb-result-code">
             <span>Código de referencia local</span>
             <strong>{booking.code}</strong>
-            <small>No está registrado en un servidor.</small>
+            <small>Demo (No está registrado en un servidor)</small>
           </div>
           <p className="pb-whatsapp-note" id="pb-whatsapp-details">
             Al abrir WhatsApp se preparará un mensaje con tu nombre, código, servicios, fecha, hora
@@ -706,13 +750,19 @@ export default function PublicApp({
           </p>
           <div className="pb-result-actions">
             <a
-              className="pb-primary pb-link-button"
+              className="pb-primary pb-link-button pb-whatsapp-button"
               href={whatsappUrl(whatsapp, contactMessage)}
               target="_blank"
               rel="noreferrer"
               aria-describedby="pb-whatsapp-details"
             >
-              Abrir WhatsApp para compartir
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path
+                  fill="currentColor"
+                  d="M20.52 3.48A11.84 11.84 0 0 0 12.04 0C5.5 0 .17 5.33.17 11.9c0 2.1.55 4.14 1.6 5.94L0 24l6.32-1.66a11.8 11.8 0 0 0 5.72 1.46h.01C18.6 23.8 24 18.47 24 11.9c0-3.17-1.24-6.15-3.48-8.42zM12.05 21.78h-.01a9.8 9.8 0 0 1-4.99-1.36l-.36-.21-3.75.98 1-3.65-.24-.38a9.8 9.8 0 0 1-1.51-5.26c0-5.43 4.42-9.85 9.87-9.85a9.8 9.8 0 0 1 6.98 2.9 9.8 9.8 0 0 1 2.88 6.99c0 5.43-4.42 9.85-9.87 9.85zm5.42-7.38c-.3-.15-1.77-.87-2.04-.97-.28-.1-.48-.15-.68.15-.2.3-.78.97-.96 1.17-.18.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.8-1.49-1.78-1.67-2.08-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.08-.15-.68-1.63-.93-2.23-.24-.58-.49-.5-.68-.51h-.58c-.2 0-.52.08-.8.37-.27.3-1.04 1.02-1.04 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.08 1.77-.73 2.02-1.43.25-.7.25-1.3.17-1.43-.08-.12-.27-.2-.57-.35z"
+                />
+              </svg>
+              Abrir WhatsApp
             </a>
             <a
               className="pb-secondary"
@@ -720,7 +770,7 @@ export default function PublicApp({
               target="_blank"
               rel="noreferrer"
             >
-              Añadir como pendiente al calendario
+              Añadir recordatorio a mi calendario
             </a>
           </div>
           <button
@@ -730,7 +780,7 @@ export default function PublicApp({
               setScreen("booking");
               setSelectedIds([]);
               setSelectedSlot(null);
-              setDate("");
+              setDate(todayInTimeZone(timeZone));
               setBooking(null);
               setQrRevealed(false);
               setDeclared(false);

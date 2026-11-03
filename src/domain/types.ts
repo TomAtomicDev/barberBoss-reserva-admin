@@ -90,7 +90,10 @@ export interface ScheduleException {
 
 export interface BusinessConfig {
   name: string;
+  /** Primary barber retained for existing administrative flows and older snapshots. */
   barber: { id: string; name: string };
+  /** Preconfigured staff sharing the business schedule in this demo. */
+  barbers?: Array<{ id: string; name: string }>;
   timeZone: string;
   schedule: ScheduleRule[];
   exceptions: ScheduleException[];
@@ -105,6 +108,8 @@ export interface ServiceVisitItem {
 
 export interface ServiceVisit {
   id: string;
+  /** Optional for backwards compatibility with visits recorded before staff selection. */
+  barberId?: string;
   bookingId?: string;
   customerId?: string;
   startsAt?: string;

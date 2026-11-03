@@ -28,6 +28,9 @@
 .public-booking a {
   color: inherit;
 }
+.public-booking a.pb-primary {
+  color: white;
+}
 .public-booking button:focus-visible,
 .public-booking a:focus-visible,
 .public-booking input:focus-visible,
@@ -300,6 +303,7 @@
   font-weight: 650;
 }
 .pb-field input,
+.pb-field select,
 .pb-field textarea {
   width: 100%;
   min-width: 0;
@@ -315,6 +319,16 @@
 .pb-field textarea::placeholder {
   color: #929ba5;
 }
+.pb-field select {
+  min-height: 44px;
+  padding: 10px 34px 10px 12px;
+  border: 1px solid #cbd2d9;
+  border-radius: 5px;
+  background: var(--pb-white);
+  color: var(--pb-ink);
+  font-size: 14px;
+  font-weight: 400;
+}
 .pb-field textarea {
   resize: vertical;
 }
@@ -325,6 +339,15 @@
 }
 .pb-date-field {
   width: min(280px, 100%);
+}
+.pb-schedule-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: 15px;
+}
+.pb-barber-field {
+  width: min(330px, 100%);
 }
 .pb-field-hint {
   margin: 7px 0 0;
@@ -341,7 +364,10 @@
   margin-top: 15px;
 }
 .pb-slot {
-  min-width: 78px;
+  display: grid;
+  min-width: 100px;
+  min-height: 52px;
+  gap: 2px;
   padding: 9px 13px;
   border: 1px solid #c8d0d8;
   border-radius: 5px;
@@ -349,12 +375,22 @@
   color: var(--pb-ink);
   font-size: 12px;
   font-weight: 650;
+  text-align: center;
   cursor: pointer;
+}
+.pb-slot small {
+  color: var(--pb-muted);
+  font-size: 10px;
+  font-weight: 500;
 }
 .pb-slot:hover,
 .pb-slot.is-selected {
   border-color: var(--pb-ink);
   background: var(--pb-ink);
+  color: white;
+}
+.pb-slot:hover small,
+.pb-slot.is-selected small {
   color: white;
 }
 .pb-form-fields {
@@ -457,6 +493,19 @@
 }
 .pb-primary:hover:not(:disabled) {
   background: #263c58;
+}
+.public-booking a.pb-whatsapp-button {
+  gap: 9px;
+  background: #075e54;
+  color: white;
+}
+.public-booking a.pb-whatsapp-button:hover {
+  background: #064b43;
+}
+.pb-whatsapp-button svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
 }
 .pb-primary:disabled {
   cursor: not-allowed;
@@ -832,6 +881,7 @@
 }
 
 .pb-field input,
+.pb-field select,
 .pb-field textarea {
   font-size: 16px;
 }

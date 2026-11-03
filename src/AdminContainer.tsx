@@ -122,7 +122,7 @@ function mapCustomers(state: DomainState): AdminCustomer[] {
     customers.set(customer.id, {
       id: customer.id,
       name: customer.name,
-      phone: customer.phone,
+      phone: customer.phone || "Sin teléfono",
       email: customer.email,
       note: customer.preferences?.notes,
       musicLink: customer.preferences?.musicLink,
@@ -134,7 +134,7 @@ function mapCustomers(state: DomainState): AdminCustomer[] {
       customers.set(booking.customer.id, {
         id: booking.customer.id,
         name: booking.customer.name,
-        phone: booking.customer.phone,
+        phone: booking.customer.phone || "Sin teléfono",
         email: booking.customer.email,
         bookingCount: 0,
       });
@@ -300,6 +300,8 @@ export function mapData(state: DomainState): AdminData {
             durationMinutes: item.durationMinutes,
           })),
           totalCents: toCents(booking.totalPrice),
+          note: booking.customer.preferences?.notes,
+          musicLink: booking.customer.preferences?.musicLink,
           paymentLabel: payments.length
             ? payments.map((payment) => paymentStatusLabel(payment.status)).join(" · ")
             : undefined,
@@ -316,13 +318,18 @@ export function mapData(state: DomainState): AdminData {
             visit.blocksAvailability !== false,
         )
         .map((visit): AdminBooking => {
-          const customer = (state.customers ?? []).find((item) => item.id === visit.customerId);
+          const linkedBooking = visit.bookingId
+            ? state.bookings.find((item) => item.id === visit.bookingId)
+            : undefined;
+          const customer =
+            (state.customers ?? []).find((item) => item.id === visit.customerId) ??
+            linkedBooking?.customer;
           return {
             id: `visit:${visit.id}`,
             code: `VIS-${visit.id.slice(-6)}`,
             customerId: visit.customerId,
             customerName: customer?.name ?? "Walk-in",
-            customerPhone: customer?.phone ?? "Sin teléfono",
+            customerPhone: customer?.phone || "Sin teléfono",
             startsAt: visit.startsAt!,
             endsAt: visit.endsAt!,
             status: "COMPLETED",
@@ -334,6 +341,8 @@ export function mapData(state: DomainState): AdminData {
               durationMinutes: item.durationMinutes,
             })),
             totalCents: toCents(visit.totalPrice),
+            note: customer?.preferences?.notes,
+            musicLink: customer?.preferences?.musicLink,
             isVisit: true,
           };
         }),
@@ -469,11 +478,13 @@ export function createWalkInFromDraft(
     };
   });
   const startsAt = now;
+  const barberId = state.business.barber.id;
   const endsAt = new Date(
     Date.parse(startsAt) + items.reduce((sum, item) => sum + item.durationMinutes, 0) * 60_000,
   ).toISOString();
   const bookingConflict = expireProvisionalBookings(state.bookings, startsAt).find(
     (booking) =>
+      booking.barberId === barberId &&
       isBlockingBooking(booking.status) &&
       overlaps(startsAt, endsAt, booking.startsAt, booking.endsAt),
   );
@@ -484,6 +495,7 @@ export function createWalkInFromDraft(
   const visitConflict = state.visits.find(
     (visit) =>
       visit.blocksAvailability !== false &&
+      (!visit.barberId || visit.barberId === barberId) &&
       visit.startsAt &&
       visit.endsAt &&
       overlaps(startsAt, endsAt, visit.startsAt, visit.endsAt),
@@ -501,6 +513,7 @@ export function createWalkInFromDraft(
   const withCustomer = upsertCustomer(state, customer);
   const visit = {
     id: makeId("visit"),
+    barberId,
     customerId: customer.id,
     startsAt,
     endsAt,
@@ -563,6 +576,7 @@ export function completeVisitFromDraft(
   ).toISOString();
   let next = completeVisit(initialState, {
     id: visitId,
+    barberId: booking?.barberId ?? state.business.barber.id,
     ...(draft.bookingId ? { bookingId: draft.bookingId } : {}),
     ...(visitCustomer ? { customerId: visitCustomer.id } : {}),
     startsAt,

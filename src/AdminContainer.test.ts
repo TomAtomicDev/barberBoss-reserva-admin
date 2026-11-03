@@ -187,6 +187,30 @@ describe("AdminContainer operation mapping", () => {
     ).toThrow(/otra atención \(existing-visit\)/);
   });
 
+  it("creates a walk-in without a phone and maps it into the agenda", () => {
+    const next = createWalkInFromDraft(
+      makeState(),
+      {
+        customerName: "Walk-in sin celular",
+        customerPhone: "",
+        serviceIds: ["cut"],
+        note: "Prefiere conversar antes del corte",
+      },
+      idFactory(),
+      NOW,
+    );
+
+    expect(next.customers?.[0]?.phone).toBe("");
+    const agendaItem = mapData(next).bookings.find((item) => item.isVisit);
+    expect(agendaItem).toMatchObject({
+      customerName: "Walk-in sin celular",
+      customerPhone: "Sin teléfono",
+      note: "Prefiere conversar antes del corte",
+      source: "walk-in",
+      isVisit: true,
+    });
+  });
+
   it("links walk-in payment movement to its visit without changing its generated movement id", () => {
     const draft: WalkInDraft = {
       customerName: "Ana Demo",
@@ -254,7 +278,12 @@ describe("AdminContainer operation mapping", () => {
 
   it("maps all booking payment statuses, approves if any payment is declared, counts visits, and forwards event changes", () => {
     const state = makeState();
-    const customer = { id: "c", name: "Ana", phone: "70000000" };
+    const customer = {
+      id: "c",
+      name: "Ana",
+      phone: "70000000",
+      preferences: { notes: "Indicar largo deseado", musicLink: "https://open.spotify.com/" },
+    };
     state.customers!.push(customer);
     state.bookings.push({
       id: "b",
@@ -305,6 +334,8 @@ describe("AdminContainer operation mapping", () => {
     });
 
     const data = mapData(state);
+    expect(data.bookings[0]?.note).toBe("Indicar largo deseado");
+    expect(data.bookings[0]?.musicLink).toBe("https://open.spotify.com/");
     expect(data.bookings[0]?.canApprove).toBe(true);
     expect(data.bookings[0]?.paymentLabel).toContain("Pago registrado en demo");
     expect(data.bookings[0]?.paymentLabel).toContain("Pago declarado, sin verificar");

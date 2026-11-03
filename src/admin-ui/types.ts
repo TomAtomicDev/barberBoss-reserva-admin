@@ -68,7 +68,9 @@ export interface AdminBooking {
   totalCents: number;
   paymentLabel?: string;
   canApprove?: boolean;
+  /** Customer instructions and music preference carried on the booking. */
   note?: string;
+  musicLink?: string;
   events?: AdminBookingEvent[];
   isVisit?: boolean;
 }

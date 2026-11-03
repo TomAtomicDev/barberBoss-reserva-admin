@@ -22,7 +22,15 @@ export function createDemoSeed(now = new Date().toISOString()): DomainState {
   const services: Service[] = [
     {
       id: "demo-cut",
-      name: "Corte clásico",
+      name: "Corte de pelo simple",
+      price: 35,
+      durationMinutes: 30,
+      active: true,
+      requiresConsultation: false,
+    },
+    {
+      id: "demo-cut-design",
+      name: "Corte de pelo con Diseño",
       price: 40,
       durationMinutes: 45,
       active: true,
@@ -30,7 +38,7 @@ export function createDemoSeed(now = new Date().toISOString()): DomainState {
     },
     {
       id: "demo-beard",
-      name: "Perfilado de barba",
+      name: "Afeitado de barba con vaporización",
       price: 25,
       durationMinutes: 30,
       active: true,
@@ -38,11 +46,35 @@ export function createDemoSeed(now = new Date().toISOString()): DomainState {
     },
     {
       id: "demo-color",
-      name: "Coloración",
+      name: "Tinte y coloración",
       price: 0,
       durationMinutes: 0,
       active: true,
       requiresConsultation: true,
+    },
+    {
+      id: "demo-perm",
+      name: "Rizado Base",
+      price: 0,
+      durationMinutes: 0,
+      active: true,
+      requiresConsultation: true,
+    },
+    {
+      id: "demo-eyebrows",
+      name: "Perfilado de cejas",
+      price: 5,
+      durationMinutes: 5,
+      active: true,
+      requiresConsultation: false,
+    },
+    {
+      id: "demo-anti-dandruff",
+      name: "Lavado y tratamiento anti-caspa",
+      price: 10,
+      durationMinutes: 10,
+      active: true,
+      requiresConsultation: false,
     },
   ];
   const pastCustomer = {
@@ -54,7 +86,7 @@ export function createDemoSeed(now = new Date().toISOString()): DomainState {
   const confirmedCustomer = { id: "demo-customer-luis", name: "Luis Demo", phone: "000000001" };
   const pendingCustomer = { id: "demo-customer-mateo", name: "Mateo Demo", phone: "000000002" };
   const pastStarts = instant(previousOpenDate, "10:00");
-  const pastEnds = instant(previousOpenDate, "10:45");
+  const pastEnds = instant(previousOpenDate, "10:30");
   const futureStarts = instant(firstFutureDate, "10:00");
   const futureEnds = instant(firstFutureDate, "10:45");
   const pendingStarts = instant(secondFutureDate, "11:00");
@@ -68,11 +100,12 @@ export function createDemoSeed(now = new Date().toISOString()): DomainState {
     status: Booking["status"],
     service: Service,
     createdAt: string,
+    barberId = "roly",
   ): Booking => ({
     id,
     code,
     customer,
-    barberId: "roly",
+    barberId,
     source: "WEB",
     startsAt,
     endsAt,
@@ -106,7 +139,7 @@ export function createDemoSeed(now = new Date().toISOString()): DomainState {
       futureStarts,
       futureEnds,
       "CONFIRMED",
-      services[0]!,
+      services[1]!,
       now,
     ),
     booking(
@@ -116,15 +149,16 @@ export function createDemoSeed(now = new Date().toISOString()): DomainState {
       pendingStarts,
       pendingEnds,
       "PENDING_VERIFICATION",
-      services[1]!,
+      services[2]!,
       now,
+      "jhon",
     ),
   ];
   const payments: Payment[] = [
     {
       id: "demo-payment-past",
       bookingId: "demo-booking-past",
-      amount: 40,
+      amount: services[0]!.price,
       method: "CASH",
       status: "VERIFIED",
       createdAt: pastEnds,
@@ -132,7 +166,7 @@ export function createDemoSeed(now = new Date().toISOString()): DomainState {
     {
       id: "demo-payment-confirmed",
       bookingId: "demo-booking-confirmed",
-      amount: 40,
+      amount: services[1]!.price,
       method: "BANK_TRANSFER",
       status: "VERIFIED",
       createdAt: now,
@@ -140,7 +174,7 @@ export function createDemoSeed(now = new Date().toISOString()): DomainState {
     {
       id: "demo-payment-pending",
       bookingId: "demo-booking-pending",
-      amount: 25,
+      amount: services[2]!.price,
       method: "BANK_TRANSFER",
       status: "DECLARED",
       createdAt: now,
@@ -149,7 +183,11 @@ export function createDemoSeed(now = new Date().toISOString()): DomainState {
   return {
     business: {
       name: "Boss Barber Shop by RF",
-      barber: { id: "roly", name: "Roly" },
+      barber: { id: "roly", name: "Roly F" },
+      barbers: [
+        { id: "roly", name: "Roly F" },
+        { id: "jhon", name: "Jhon R" },
+      ],
       timeZone,
       schedule,
       exceptions: [],
@@ -161,6 +199,7 @@ export function createDemoSeed(now = new Date().toISOString()): DomainState {
     visits: [
       {
         id: "demo-visit-past",
+        barberId: "roly",
         bookingId: "demo-booking-past",
         customerId: pastCustomer.id,
         startsAt: pastStarts,
@@ -168,23 +207,28 @@ export function createDemoSeed(now = new Date().toISOString()): DomainState {
         blocksAvailability: true,
         completedAt: pastEnds,
         items: [
-          { serviceId: services[0]!.id, name: services[0]!.name, price: 40, durationMinutes: 45 },
+          {
+            serviceId: services[0]!.id,
+            name: services[0]!.name,
+            price: services[0]!.price,
+            durationMinutes: services[0]!.durationMinutes,
+          },
         ],
-        totalPrice: 40,
+        totalPrice: services[0]!.price,
       },
     ],
     movements: [
       {
         id: "payment:demo-payment-past",
         kind: "PAYMENT_IN",
-        amount: 40,
+        amount: services[0]!.price,
         occurredAt: pastEnds,
         paymentId: "demo-payment-past",
       },
       {
         id: "payment:demo-payment-confirmed",
         kind: "PAYMENT_IN",
-        amount: 40,
+        amount: services[1]!.price,
         occurredAt: now,
         paymentId: "demo-payment-confirmed",
       },

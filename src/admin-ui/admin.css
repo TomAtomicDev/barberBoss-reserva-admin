@@ -1217,6 +1217,28 @@
 .admin-detail > .admin-status {
   margin: 14px 0;
 }
+.admin-detail-preferences {
+  margin: 16px 0;
+  padding: 12px;
+  border: 1px solid #e3e7eb;
+  border-radius: 6px;
+  background: #f5f7f8;
+}
+.admin-detail-preferences h3 {
+  margin: 0 0 7px;
+  color: #17263a;
+}
+.admin-detail-preferences p {
+  margin: 5px 0 0;
+  color: #34465d;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.admin-detail-preferences a {
+  color: #a94f28;
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
 .admin-detail h3 {
   font-size: 12px;
   margin: 22px 0 8px;
