@@ -12,10 +12,10 @@ El MVP se evaluará con **una sola barbería y un solo barbero**. La primera ver
 
 ## 2. Actores y accesos
 
-| Actor | Acceso | Acciones |
-|---|---|---|
-| Visitante/cliente | Sin cuenta, contraseña ni OTP | Consultar servicios/horarios; solicitar una reserva; indicar nombre, celular y correo opcional; proporcionar preferencias; abrir WhatsApp para comunicar un pago; añadir un recordatorio de calendario. |
-| Propietario | Inicio de sesión seguro en el dashboard | Gestionar disponibilidad, servicios, reservas, clientes, comprobantes, atenciones e ingresos. Desempeña los roles de administrador y barbero. |
+| Actor             | Acceso                                  | Acciones                                                                                                                                                                                                |
+| ----------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Visitante/cliente | Sin cuenta, contraseña ni OTP           | Consultar servicios/horarios; solicitar una reserva; indicar nombre, celular y correo opcional; proporcionar preferencias; abrir WhatsApp para comunicar un pago; añadir un recordatorio de calendario. |
+| Propietario       | Inicio de sesión seguro en el dashboard | Gestionar disponibilidad, servicios, reservas, clientes, comprobantes, atenciones e ingresos. Desempeña los roles de administrador y barbero.                                                           |
 
 **Privacidad:** el cliente no puede consultar historiales generales ni administrar reservas ajenas. Las solicitudes posteriores de reprogramación, cancelación o consulta de estado se realizan **por WhatsApp y son atendidas manualmente**. No habrá portal de clientes en el MVP.
 
@@ -41,8 +41,8 @@ Si un servicio requiere evaluación de duración o precio (por ejemplo, un dise�
 4. **Identificación mínima.** Antes de bloquear, proporciona **nombre, celular y correo opcional**. No crea contraseña ni cuenta.
 5. **Bloquear horario y continuar.** El servidor crea una reserva provisional, con código único, y bloquea el intervalo por **15 minutos**, calculados desde la hora del servidor. Si el horario fue ocupado entretanto, solicita elegir otro.
 6. **Pago.** Muestra nombre de la cuenta bancaria, instrucciones, importe exacto en bolivianos, imagen descargable del QR bancario estático (sin monto precargado) y cuenta regresiva. El cliente paga desde su aplicación bancaria.
-7. **Declarar pago y contactar.** El botón **«Ya pagué: enviar comprobante por WhatsApp»** registra que el cliente *declara* haber pagado, detiene su cuenta regresiva y abre WhatsApp con un texto prellenado dirigido al propietario. El texto contiene nombre, código de reserva, servicios, fecha, horario e importe, y pide **adjuntar manualmente el comprobante**.
-8. **Pantalla final.** Al volver a la PWA, muestra **«Solicitud recibida. Pendiente de verificación del pago»** (no «reserva confirmada»), código y resumen de la cita; ofrece **«Añadir a Google Calendar»** mediante enlace a un evento identificado como *pendiente de confirmación*.
+7. **Declarar pago y contactar.** El botón **«Ya pagué: enviar comprobante por WhatsApp»** registra que el cliente _declara_ haber pagado, detiene su cuenta regresiva y abre WhatsApp con un texto prellenado dirigido al propietario. El texto contiene nombre, código de reserva, servicios, fecha, horario e importe, y pide **adjuntar manualmente el comprobante**.
+8. **Pantalla final.** Al volver a la PWA, muestra **«Solicitud recibida. Pendiente de verificación del pago»** (no «reserva confirmada»), código y resumen de la cita; ofrece **«Añadir a Google Calendar»** mediante enlace a un evento identificado como _pendiente de confirmación_.
 
 **Límite del canal:** abrir WhatsApp no confirma que el cliente haya enviado el mensaje, adjuntado el comprobante ni pagado. El botón solo registra una **declaración de pago**, nunca una validación financiera. El administrador debe resolver estas solicitudes. No se integra API de WhatsApp ni de Google Calendar: solo enlaces.
 
@@ -94,37 +94,37 @@ Los reportes básicos mostrarán **cobros y devoluciones por fecha** y, por sepa
 
 ## 7. Políticas del negocio (configuración inicial)
 
-| Política | Valor inicial |
-|---|---|
-| Anticipación máxima | 6 semanas |
-| Anticipación mínima | 1 hora |
-| Paso de inicio de reservas | 30 minutos |
-| Plazo para declarar pago | 15 minutos |
-| Anticipo para reservas creadas por cliente | 100 % |
-| Reprogramación gratuita | Con al menos 2 horas de antelación, sin límite de veces mientras respete la regla |
-| Cancelación tardía o inasistencia | Reagendar requiere un pago adicional equivalente al 70 % del precio del servicio acordado |
-| Tolerancia de llegada | 5 minutos; el administrador marca `NO_SHOW` si corresponde |
-| Cancelación por la barbería | Reagendación sin costo, conservando el crédito completo |
-| Reembolsos | No automáticos; el administrador puede gestionarlos fuera del sistema bancario y registrar la devolución |
+| Política                                   | Valor inicial                                                                                            |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| Anticipación máxima                        | 6 semanas                                                                                                |
+| Anticipación mínima                        | 1 hora                                                                                                   |
+| Paso de inicio de reservas                 | 30 minutos                                                                                               |
+| Plazo para declarar pago                   | 15 minutos                                                                                               |
+| Anticipo para reservas creadas por cliente | 100 %                                                                                                    |
+| Reprogramación gratuita                    | Con al menos 2 horas de antelación, sin límite de veces mientras respete la regla                        |
+| Cancelación tardía o inasistencia          | Reagendar requiere un pago adicional equivalente al 70 % del precio del servicio acordado                |
+| Tolerancia de llegada                      | 5 minutos; el administrador marca `NO_SHOW` si corresponde                                               |
+| Cancelación por la barbería                | Reagendación sin costo, conservando el crédito completo                                                  |
+| Reembolsos                                 | No automáticos; el administrador puede gestionarlos fuera del sistema bancario y registrar la devolución |
 
 Las reglas se almacenarán como **configuración del negocio**, aunque no es necesario desarrollar un panel completo de parámetros para la demo. Las decisiones excepcionales del administrador deben registrarse.
 
 ## 8. Modelo conceptual mínimo
 
-| Concepto | Responsabilidad principal |
-|---|---|
-| `Business` | Datos de la barbería, cuenta/QR de cobro, zona horaria y parámetros del negocio. |
-| `StaffUser` / `Barber` | Inicio de sesión y rol del propietario; capacidad para prestar servicios y atender citas. |
-| `Customer` | Nombre, celular, correo opcional, preferencias e historial interno. |
-| `Service` | Catálogo de prestaciones, precio, duración, disponibilidad y necesidad de evaluación previa. |
-| `ScheduleRule` / `ScheduleException` | Horarios recurrentes, pausas y excepciones. |
-| `Booking` | Solicitud o cita con cliente, barbero, inicio-fin, estado, origen (web/teléfono), importe acordado y plazo del bloqueo. |
-| `BookingItem` | Servicios incluidos en la reserva y sus precios/duraciones **congelados al reservar**. |
-| `Payment` | Intento o registro de pago, tipo, importe, método, fecha, estado y referencia al comprobante externo. |
-| `ServiceVisit` / `ServiceVisitItem` | Atención realmente efectuada y servicios realizados, vinculados opcionalmente a una reserva. |
-| `MoneyMovement` | Entradas/salidas de caja: cobros, ventas, adicionales y devoluciones, sin duplicar anticipos. |
-| `ProductSale` | Venta simple de un producto, sin inventario. |
-| `BookingEvent` | Auditoría: acción, actor, momento, motivo y cambios relevantes. |
+| Concepto                             | Responsabilidad principal                                                                                               |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `Business`                           | Datos de la barbería, cuenta/QR de cobro, zona horaria y parámetros del negocio.                                        |
+| `StaffUser` / `Barber`               | Inicio de sesión y rol del propietario; capacidad para prestar servicios y atender citas.                               |
+| `Customer`                           | Nombre, celular, correo opcional, preferencias e historial interno.                                                     |
+| `Service`                            | Catálogo de prestaciones, precio, duración, disponibilidad y necesidad de evaluación previa.                            |
+| `ScheduleRule` / `ScheduleException` | Horarios recurrentes, pausas y excepciones.                                                                             |
+| `Booking`                            | Solicitud o cita con cliente, barbero, inicio-fin, estado, origen (web/teléfono), importe acordado y plazo del bloqueo. |
+| `BookingItem`                        | Servicios incluidos en la reserva y sus precios/duraciones **congelados al reservar**.                                  |
+| `Payment`                            | Intento o registro de pago, tipo, importe, método, fecha, estado y referencia al comprobante externo.                   |
+| `ServiceVisit` / `ServiceVisitItem`  | Atención realmente efectuada y servicios realizados, vinculados opcionalmente a una reserva.                            |
+| `MoneyMovement`                      | Entradas/salidas de caja: cobros, ventas, adicionales y devoluciones, sin duplicar anticipos.                           |
+| `ProductSale`                        | Venta simple de un producto, sin inventario.                                                                            |
+| `BookingEvent`                       | Auditoría: acción, actor, momento, motivo y cambios relevantes.                                                         |
 
 No es necesario crear una tabla distinta para todos estos conceptos si eso complica el demo: son **responsabilidades conceptuales** que deben conservarse en el diseño. Los detalles del esquema físico se decidirán más adelante.
 

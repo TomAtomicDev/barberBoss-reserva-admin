@@ -14,16 +14,16 @@ Este documento define el demo. `definicion_mvp.md` describe el MVP previsto y no
 
 ## 2. Alcance y experiencia
 
-| Área | Implementación del demo |
-|---|---|
-| Catálogo y agenda | Servicios y horarios ficticios; disponibilidad calculada localmente. |
-| Reserva web | Flujo completo de selección, datos y bloqueo **simulado**. |
-| Pago | QR real estático, importe mostrado y declaración local; sin consulta bancaria ni verificación automática. |
-| WhatsApp | Apertura real con mensaje prellenado; el usuario envía y adjunta el comprobante manualmente. |
-| Administración | Dashboard interactivo con agenda, solicitudes, clientes, atenciones y movimientos ficticios. |
-| Persistencia | `localStorage` del navegador actual; sin sincronización entre usuarios o dispositivos. |
-| Login | Simulación visual, sin credenciales reales ni seguridad; no protege rutas ni datos. |
-| Conexión | Necesaria para acceder al sitio y usar enlaces externos; no se ofrece funcionamiento sin conexión. Los cambios simulados se guardan localmente. |
+| Área              | Implementación del demo                                                                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Catálogo y agenda | Servicios y horarios ficticios; disponibilidad calculada localmente.                                                                            |
+| Reserva web       | Flujo completo de selección, datos y bloqueo **simulado**.                                                                                      |
+| Pago              | QR real estático, importe mostrado y declaración local; sin consulta bancaria ni verificación automática.                                       |
+| WhatsApp          | Apertura real con mensaje prellenado; el usuario envía y adjunta el comprobante manualmente.                                                    |
+| Administración    | Dashboard interactivo con agenda, solicitudes, clientes, atenciones y movimientos ficticios.                                                    |
+| Persistencia      | `localStorage` del navegador actual; sin sincronización entre usuarios o dispositivos.                                                          |
+| Login             | Simulación visual, sin credenciales reales ni seguridad; no protege rutas ni datos.                                                             |
+| Conexión          | Necesaria para acceder al sitio y usar enlaces externos; no se ofrece funcionamiento sin conexión. Los cambios simulados se guardan localmente. |
 
 El demo es público. Debe mostrar de forma persistente y comprensible que es una demostración, que las reservas no llegan automáticamente al propietario y que el QR permite **transferencias reales**. Antes de mostrar el QR, explicar el carácter real del pago y no inducir al usuario a creer que obtiene una cita confirmada.
 
@@ -56,10 +56,10 @@ Para un MVP conectado se ha considerado React/Vite en Cloudflare, un Worker de A
 
 ## 4. Actores y accesos
 
-| Actor | Experiencia en el demo |
-|---|---|
-| Visitante | Explora servicios y horarios ficticios, simula una solicitud y puede abrir WhatsApp o transferir usando el QR real. |
-| Propietario | Entra al dashboard mediante una pantalla de acceso **simulada** y gestiona datos locales. |
+| Actor       | Experiencia en el demo                                                                                              |
+| ----------- | ------------------------------------------------------------------------------------------------------------------- |
+| Visitante   | Explora servicios y horarios ficticios, simula una solicitud y puede abrir WhatsApp o transferir usando el QR real. |
+| Propietario | Entra al dashboard mediante una pantalla de acceso **simulada** y gestiona datos locales.                           |
 
 No almacenar credenciales reales ni presentar el login simulado como protección. El teléfono introducido no verifica identidad. No existe portal privado del cliente ni historial compartido.
 
@@ -67,20 +67,20 @@ No almacenar credenciales reales ni presentar el login simulado como protección
 
 Son responsabilidades conceptuales; pueden representarse mediante tipos y objetos locales sin crear una tabla o clase por concepto.
 
-| Concepto | Responsabilidad y datos principales |
-|---|---|
-| `Business` | Nombre, zona horaria, instrucciones de pago, número WhatsApp y políticas de demostración. |
-| `StaffUser` / `Barber` | Propietario/barbero ficticio; identificación para agenda y auditoría simulada. No representa una cuenta segura. |
-| `Customer` | Nombre, teléfono, correo opcional y preferencias ficticias; teléfono no verificado. |
-| `Service` | Catálogo: nombre, precio en bolivianos, duración, activo y si requiere consulta previa. |
-| `ScheduleRule` / `ScheduleException` | Horario semanal, pausas y excepciones usadas para calcular disponibilidad. |
-| `Booking` | Solicitud o cita: cliente, barbero, origen, inicio y fin, estado, importe, código y vencimiento local. Ocupa un intervalo; no es un slot. |
-| `BookingItem` | Servicio incluido con nombre, precio y duración congelados al crear la reserva. |
-| `Payment` | Declaración o registro de pago con importe, método y estado propios; no prueba un movimiento bancario. |
-| `ServiceVisit` / `ServiceVisitItem` | Atención y servicios efectivamente registrados; puede proceder de una reserva o ser walk-in. |
-| `MoneyMovement` | Entrada o salida registrada en el demo para reportes, sin conciliación bancaria. |
-| `ProductSale` | Venta simple con descripción, cantidad e importe, sin inventario. |
-| `BookingEvent` | Cambio relevante: acción, actor simulado, fecha, motivo y datos modificados. |
+| Concepto                             | Responsabilidad y datos principales                                                                                                       |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `Business`                           | Nombre, zona horaria, instrucciones de pago, número WhatsApp y políticas de demostración.                                                 |
+| `StaffUser` / `Barber`               | Propietario/barbero ficticio; identificación para agenda y auditoría simulada. No representa una cuenta segura.                           |
+| `Customer`                           | Nombre, teléfono, correo opcional y preferencias ficticias; teléfono no verificado.                                                       |
+| `Service`                            | Catálogo: nombre, precio en bolivianos, duración, activo y si requiere consulta previa.                                                   |
+| `ScheduleRule` / `ScheduleException` | Horario semanal, pausas y excepciones usadas para calcular disponibilidad.                                                                |
+| `Booking`                            | Solicitud o cita: cliente, barbero, origen, inicio y fin, estado, importe, código y vencimiento local. Ocupa un intervalo; no es un slot. |
+| `BookingItem`                        | Servicio incluido con nombre, precio y duración congelados al crear la reserva.                                                           |
+| `Payment`                            | Declaración o registro de pago con importe, método y estado propios; no prueba un movimiento bancario.                                    |
+| `ServiceVisit` / `ServiceVisitItem`  | Atención y servicios efectivamente registrados; puede proceder de una reserva o ser walk-in.                                              |
+| `MoneyMovement`                      | Entrada o salida registrada en el demo para reportes, sin conciliación bancaria.                                                          |
+| `ProductSale`                        | Venta simple con descripción, cantidad e importe, sin inventario.                                                                         |
+| `BookingEvent`                       | Cambio relevante: acción, actor simulado, fecha, motivo y datos modificados.                                                              |
 
 ### 5.1 Relaciones principales
 
