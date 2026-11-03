@@ -1,48 +1,34 @@
-# BarberBoss — demo de reservas y gestión
+# Boss Barber Shop by RF — demo de reservas y gestión
 
-Prototipo interactivo para presentar a una barbería cómo podría funcionar su sistema de reservas y administración. El objetivo es validar los flujos y recoger comentarios del cliente **antes de desarrollar el MVP conectado**.
+Prototipo estático para validar la experiencia de reservas y administración de una barbería antes de construir un producto conectado. La agenda, las operaciones y el acceso administrativo son **simulaciones**, no un sistema de reservas real.
 
-## Estado del proyecto
+El negocio es **Boss Barber Shop by RF** y el barbero de la demo es **Roly**.
 
-El proyecto se encuentra en **fase de diseño**. Por ahora contiene documentación y una imagen de QR; la aplicación frontend y su despliegue todavía no están implementados. Por tanto, aún no hay instrucciones de instalación o ejecución disponibles.
+## Seguridad y límites
 
-## Qué se busca demostrar
+- Los datos se guardan únicamente en `localStorage` del navegador actual. No hay servidor, sincronización entre dispositivos, bloqueo concurrente ni garantía de disponibilidad.
+- Usa nombres, teléfonos y demás datos **ficticios o de prueba**. El acceso administrativo no protege rutas ni datos y no debe usarse con credenciales reales.
+- **El QR bancario es real: una transferencia puede mover dinero.** El demo no verifica pagos ni confirma citas. No realices transferencias durante las pruebas.
+- WhatsApp abre un enlace real. El mensaje y el comprobante solo se envían si el usuario lo hace manualmente; abrir el enlace no demuestra su envío. El propietario no recibe automáticamente las solicitudes locales.
+- Se necesita conexión para acceder al sitio y usar los enlaces externos. No se ofrece funcionamiento offline, colas ni sincronización en segundo plano.
 
-- Consulta de servicios y disponibilidad simulada.
-- Solicitud de reserva, selección de servicios y declaración de pago.
-- Apertura de WhatsApp con un mensaje prellenado para que el usuario lo envíe y adjunte su comprobante manualmente.
-- Dashboard simulado para gestionar agenda, solicitudes, clientes, atenciones y movimientos.
-- Persistencia local de los datos del demo mediante `localStorage`, con opción de restaurar los datos iniciales.
+## Desarrollo
 
-La información guardada en `localStorage` pertenecerá únicamente al navegador utilizado: **no se compartirá entre dispositivos ni se enviará automáticamente al propietario**. El acceso al dashboard será una simulación, no un mecanismo de seguridad.
+El proyecto utiliza [Vite+](https://viteplus.dev/) y su CLI `vp`.
 
-> **Pagos reales:** el QR previsto corresponde a una cuenta bancaria real y una transferencia puede mover dinero real. El demo no verificará pagos ni registrará reservas en un servidor. La interfaz deberá advertirlo claramente antes de mostrar el QR y de iniciar el flujo de pago.
+```sh
+vp install
+vp dev
+vp check
+vp test
+vp run build
+```
 
-## Arquitectura prevista para el demo
+El sitio utiliza rutas con hash para que puedan recargarse en GitHub Pages. La configuración de despliegue debe usar el `base` correspondiente al nombre del repositorio. El QR está en [`src/assets/paymentQR.jpg`](src/assets/paymentQR.jpg) y debe comprobarse visualmente y con una aplicación bancaria sin efectuar una transferencia. La imagen proporcionada indica vigencia hasta el **30 de noviembre de 2026**; debe renovarse cuando corresponda.
 
-| Componente | Tecnología o enfoque previsto |
-|---|---|
-| Interfaz | React, TypeScript, Vite y shadcn/ui |
-| Publicación | GitHub Pages |
-| Datos y reglas | Datos ficticios y lógica simulada en el navegador |
-| Persistencia | `localStorage` |
-| Integraciones | Enlace real a WhatsApp y enlace opcional a Google Calendar |
-| Backend | Ninguno en esta etapa |
+El número público de WhatsApp previsto es `59171214364` y se configura en [`src/config.ts`](src/config.ts). No incluir secretos, credenciales, comprobantes ni datos sensibles en el código o el almacenamiento local.
 
-El sitio será público y requerirá conexión para acceder y utilizar los enlaces externos. No se promete funcionamiento sin conexión, autenticación real, disponibilidad compartida ni protección frente a reservas simultáneas.
+## Documentación
 
-Para una futura implementación conectada se ha considerado Cloudflare Workers con Supabase PostgreSQL y Auth; esta arquitectura no forma parte del demo actual.
-
-## Documentación y archivos
-
-- [Diseño del demo](MVP/dise%C3%B1o_demo.md): alcance, arquitectura, modelo de dominio, flujos y criterios de aceptación del prototipo.
-- [Definición del MVP](MVP/definicion_mvp.md): requisitos del producto conectado previsto, independiente del alcance simulado del demo.
-- [`paymentQR.jpg`](paymentQR.jpg): imagen del QR de pago presente en la raíz. El diseño propone publicarla como recurso del frontend; su ubicación definitiva se definirá al implementar la aplicación.
-
-## Próximos pasos
-
-1. Inicializar la aplicación con Vite, React y TypeScript e incorporar shadcn/ui.
-2. Implementar los flujos y datos simulados descritos en el diseño del demo.
-3. Configurar el número de WhatsApp, las advertencias de pago y la publicación del QR.
-4. Configurar GitHub Pages y comprobar las rutas y los recursos en la URL publicada.
-5. Presentar el demo al cliente y recopilar los cambios antes de construir el backend.
+- [Diseño del demo](docs/MVP/dise%C3%B1o_demo.md): alcance, flujos y criterios de aceptación de este prototipo.
+- [Definición del MVP](docs/MVP/definicion_mvp.md): contexto y políticas del futuro producto conectado, fuera del alcance de esta demo.

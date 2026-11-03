@@ -1,6 +1,19 @@
 import { defineConfig } from "vite-plus";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import { fileURLToPath } from "node:url";
 
 export default defineConfig({
+  base: process.env.GITHUB_ACTIONS ? "/barberBoss-reserva-admin/" : "/",
+  plugins: [tailwindcss(), react()],
+  resolve: {
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+  },
+  test: {
+    environment: "node",
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    clearMocks: true,
+  },
   staged: {
     "*": "vp check --fix --no-error-on-unmatched-pattern",
   },
