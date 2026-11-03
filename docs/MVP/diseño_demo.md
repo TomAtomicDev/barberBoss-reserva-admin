@@ -176,8 +176,7 @@ Backend, base de datos compartida, Supabase, Worker de API, sincronización entr
 
 ## 11. Pendientes para preparar la demo
 
-- Recibir `assets/paymentQR.jpg` y verificar que se publica y escanea correctamente.
-- Definir número de WhatsApp de destino, nombre del negocio, zona horaria e instrucciones visibles de pago.
-- Acordar importes y datos ficticios iniciales con los que se hará la demostración.
-- Definir URL del repositorio y configuración de GitHub Pages para establecer el `base` de Vite.
-- Validar con el cliente los textos de advertencia, especialmente el riesgo de transferencias reales sin reserva compartida.
+- Recibir `src/assets/paymentQR.jpg` y verificar que se publica y escanea correctamente. // Resuelto
+- Definir número de WhatsApp de destino, nombre del negocio, zona horaria e instrucciones visibles de pago. // Resuelto, el numero destino sera 59171214364
+- Definir URL del repositorio y configuración de GitHub Pages para establecer el `base` de Vite. // Ya se ha creado y linkeado el repositorio remoto.
+- No habrá riesgo de transferencias reales, la demo esta controlada 100%.
